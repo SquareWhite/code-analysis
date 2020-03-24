@@ -1,0 +1,35 @@
+{
+  "name": "name-changer",
+  "version": "0.0.1",
+  "description": "",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "jest --coverage",
+    "test:watch": "jest --coverage --watchAll",
+    "build": "tsc",
+    "build:watch": "tsc -w",
+    "view:coverage": "serve coverage/lcov-report",
+    "clean": "rm -rf coverage src/**/*.js src/**/*.map",
+    "start": "node dist/index.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "acorn": "^7.1.1",
+    "acorn-walk": "^7.1.1",
+    "escodegen": "^1.14.1",
+    "outdent": "^0.7.1",
+    "typescript": "^3.8.3"
+  },
+  "devDependencies": {
+    "@types/acorn": "^4.0.5",
+    "@types/escodegen": "0.0.6",
+    "@types/jest": "^25.1.4",
+    "@types/node": "^13.9.1",
+    "@types/source-map-support": "^0.5.1",
+    "jest": "^25.1.0",
+    "serve": "^11.3.0",
+    "source-map-support": "^0.5.16",
+    "ts-jest": "^25.2.1"
+  }
+}
