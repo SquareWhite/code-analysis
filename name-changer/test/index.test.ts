@@ -11,7 +11,7 @@ describe('renameVariable(oldName, newName)', () => {
         `;
         const nameChanger = new NameChanger(inputCode);
         nameChanger.renameVariable('a', 'x');
-        expect(nameChanger.buildString())
+        expect(nameChanger.toCode())
             .toBe(outdent`
                 const x = 1;
                 const b = 2;
@@ -29,7 +29,7 @@ describe('renameVariable(oldName, newName)', () => {
         `;
         const nameChanger = new NameChanger(inputCode);
         nameChanger.renameVariable('a', 'x');
-        expect(nameChanger.buildString())
+        expect(nameChanger.toCode())
             .toBe(outdent`
                 function x() {
                     return 1;
@@ -51,7 +51,7 @@ describe('renameVariable(oldName, newName)', () => {
         `;
         const nameChanger = new NameChanger(inputCode);
         nameChanger.renameVariable('log', 'print');
-        expect(nameChanger.buildString())
+        expect(nameChanger.toCode())
             .toBe(outdent` 
                 function main() {
                     const _print = 'World';
@@ -62,7 +62,7 @@ describe('renameVariable(oldName, newName)', () => {
             );
     });
 
-    it('Modifies function parameters that shadow newName', () => {
+    it('Modifies function\'s parameters when they shadow newName - declaration', () => {
         const inputCode = outdent`
             function main(print) {
                 log(print);
@@ -73,11 +73,53 @@ describe('renameVariable(oldName, newName)', () => {
         `;
         const nameChanger = new NameChanger(inputCode);
         nameChanger.renameVariable('log', 'print');
-        expect(nameChanger.buildString())
+        expect(nameChanger.toCode())
             .toBe(outdent`
                 function main(_print) {
                     print(_print);
                 }
+                print('Hello');
+                main('World');`
+            );
+    });
+
+    it('Modifies function\'s parameters when they shadow newName - expression', () => {
+        const inputCode = outdent`
+            const main = function (print) {
+                log(print);
+            };
+
+            log('Hello');
+            main('World');
+        `;
+        const nameChanger = new NameChanger(inputCode);
+        nameChanger.renameVariable('log', 'print');
+        expect(nameChanger.toCode())
+            .toBe(outdent`
+                const main = function (_print) {
+                    print(_print);
+                };
+                print('Hello');
+                main('World');`
+            );
+    });
+
+    it('Modifies arrow function\'s parameters that shadow newName', () => {
+        const inputCode = outdent`
+            const main = print => {
+                log(print);
+            };
+
+            log('Hello');
+            main('World');
+        `;
+        const nameChanger = new NameChanger(inputCode);
+        nameChanger.renameVariable('log', 'print');
+        expect(nameChanger.toCode())
+            .toBe(outdent`
+                const main = _print => {
+                    print(_print);
+                };
                 print('Hello');
                 main('World');`
             );
@@ -97,7 +139,7 @@ describe('renameVariable(oldName, newName)', () => {
         `;
         const nameChanger = new NameChanger(inputCode);
         nameChanger.renameVariable('log', 'print');
-        expect(nameChanger.buildString())
+        expect(nameChanger.toCode())
             .toBe(outdent`
                 function main() {
                     const _print = 'World';
@@ -123,7 +165,7 @@ describe('renameVariable(oldName, newName)', () => {
         `;
         const nameChanger = new NameChanger(inputCode);
         nameChanger.renameVariable('log', 'print');
-        expect(nameChanger.buildString())
+        expect(nameChanger.toCode())
             .toBe(outdent`
                 function main() {
                     const _print = 'World';
@@ -149,7 +191,7 @@ describe('renameVariable(oldName, newName)', () => {
         `;
         const nameChanger = new NameChanger(inputCode);
         nameChanger.renameVariable('log', 'print');
-        expect(nameChanger.buildString())
+        expect(nameChanger.toCode())
             .toBe(outdent`
                 function main() {
                     const _print = 'World';
@@ -172,7 +214,7 @@ describe('renameVariable(oldName, newName)', () => {
         `;
         const nameChanger = new NameChanger(inputCode);
         nameChanger.renameVariable('log', 'print');
-        expect(nameChanger.buildString())
+        expect(nameChanger.toCode())
             .toBe(outdent`
                 function main(print) {
                     console.log(print);
@@ -194,7 +236,7 @@ describe('renameVariable(oldName, newName)', () => {
         `;
         const nameChanger = new NameChanger(inputCode);
         nameChanger.renameVariable('log', 'print');
-        expect(nameChanger.buildString())
+        expect(nameChanger.toCode())
             .toBe(outdent`
                 {
                     const print = 'World';
@@ -217,7 +259,7 @@ describe('renameVariable(oldName, newName)', () => {
         `;
         const nameChanger = new NameChanger(inputCode);
         nameChanger.renameVariable('log', 'print');
-        expect(nameChanger.buildString())
+        expect(nameChanger.toCode())
             .toBe(outdent`
                 function main() {
                     const print = 'World';
@@ -242,7 +284,7 @@ describe('renameVariable(oldName, newName)', () => {
         `;
         const nameChanger = new NameChanger(inputCode);
         nameChanger.renameVariable('log', 'print');
-        expect(nameChanger.buildString())
+        expect(nameChanger.toCode())
             .toBe(outdent`
                 function main() {
                     const _print = 'World';
@@ -252,6 +294,59 @@ describe('renameVariable(oldName, newName)', () => {
                 }
                 print('log');
                 main()();`
+            );
+    });
+
+    it('Everything combined', () => {
+        const inputCode = outdent`
+            function log(msg) {
+                console.log(msg);
+            }
+        
+            function main(print) {
+                log(print);
+                return () => {
+                    const print = 'print';
+                    log(print);
+                };
+            }
+            
+            {
+                const print = 'World';
+                console.log(print);
+            }
+            
+            let a = {
+                print: () => {}
+            };
+
+            log('log');
+            main('Hello World!')();
+        `;
+        const nameChanger = new NameChanger(inputCode);
+        nameChanger.renameVariable('log', 'print');
+        expect(nameChanger.toCode())
+            .toBe(outdent`
+                function print(msg) {
+                    console.log(msg);
+                }
+                function main(_print) {
+                    print(_print);
+                    return () => {
+                        const _print = 'print';
+                        print(_print);
+                    };
+                }
+                {
+                    const print = 'World';
+                    console.log(print);
+                }
+                let a = {
+                    print: () => {
+                    }
+                };
+                print('log');
+                main('Hello World!')();`
             );
     });
 });

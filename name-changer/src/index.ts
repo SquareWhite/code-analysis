@@ -1,7 +1,6 @@
 import * as acorn from 'acorn';
 import * as walk from 'acorn-walk';
 import * as escodegen from 'escodegen';
-import {outdent} from "outdent";
 
 
 export default class NameChanger {
@@ -11,13 +10,13 @@ export default class NameChanger {
         this.astTree = acorn.parse(inputCode);
     }
 
-    buildString() : string {
+    toCode() : string {
         return escodegen.generate(this.astTree);
     }
 
     renameVariable(oldName: string, newName: string) : void {
-        const foundOldNames: Node[] = [];
-        const foundNewNames: {identifier: Node, ancestors: Node[]}[] = [];
+        const foundOldNames: Identifier[] = [];
+        const foundNewNames: IdentifierWithContext[] = [];
 
         walk.fullAncestor(this.astTree, (node: Node, _, ancestors: Node[]) => {
             let identifiers = this.lookForIdentifiers(node);
@@ -37,24 +36,28 @@ export default class NameChanger {
         });
 
         foundNewNames.forEach(({identifier, ancestors}) => {
-            if (this.closestScopeContains(oldName, ancestors)) {
+            if (this.closestScopeContainsName(oldName, ancestors)) {
                 identifier.name = '_' + newName;
             }
         });
         foundOldNames.forEach(identifier => identifier.name = newName);
     }
 
-    private closestScopeContains(name: string, ancestors: Node[]) : boolean {
+    private closestScopeContainsName(name: string, ancestors: Node[]) : boolean {
+        const LEXICAL_SCOPE_TYPES = [
+            'BlockStatement',
+            'FunctionDeclaration',
+            'FunctionExpression',
+            'ArrowFunctionExpression',
+        ];
+
         let block = ancestors
             .reverse()
-            .find(node =>
-                node.type === 'BlockStatement' ||
-                node.type === 'FunctionDeclaration'
-            );
+            .find(node => LEXICAL_SCOPE_TYPES.includes(node.type));
         if (!block) {
             return true;
         }
-        if (block.type === 'FunctionDeclaration') {
+        if (block.type !== 'BlockStatement') {
             block = block.body;
         }
 
@@ -64,7 +67,6 @@ export default class NameChanger {
             if (!identifiers.length) {
                 return;
             }
-
             identifiers.forEach(identifier => {
                 if (identifier.name === name) {
                     appeared = true;
@@ -74,11 +76,11 @@ export default class NameChanger {
         return appeared;
     }
 
-    private lookForIdentifiers(node: Node) : Node[] {
-        let identifiers = [];
+    private lookForIdentifiers(node: Node) : Identifier[] {
+        let identifiers: Identifier[] = [];
 
         if (node.type === 'Identifier') {
-           identifiers.push(node);
+           identifiers.push(<Identifier>node);
         }
         if (node.id) {
             identifiers.push(node.id);
@@ -93,8 +95,16 @@ export default class NameChanger {
 
 
 interface Node extends acorn.Node {
-    name?: string,
-    id?: Node,
-    params?: Node[],
+    id?: Identifier,
+    params?: Identifier[],
     body?: Node
+}
+
+interface Identifier extends Node {
+    name: string
+}
+
+interface IdentifierWithContext {
+    identifier: Identifier,
+    ancestors: Node[]
 }
