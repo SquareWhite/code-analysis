@@ -1,3 +1,5 @@
+import {Node} from "./node";
+
 export class BinaryTree<T> {
     private _root: Node<T>;
 
@@ -131,11 +133,4 @@ export class BinaryTree<T> {
             }
         }
     }
-}
-
-export class Node<T>{
-    public left: Node<T>;
-    public right: Node<T>;
-    public parent: Node<T>;
-    constructor(public value: T) { }
 }

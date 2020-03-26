@@ -6,7 +6,7 @@ describe('renameVariable(oldName, newName)', () => {
     it('Changes the name of a variable', () => {
         const inputCode = outdent`
             const a = 1;
-            const b = 2; 
+            const b = 2;
             console.log(a + b);
         `;
         const nameChanger = new NameChanger(inputCode);
@@ -24,7 +24,7 @@ describe('renameVariable(oldName, newName)', () => {
             function a() {
                 return 1;
             }
-            const b = 2; 
+            const b = 2;
             console.log(a() + b);
         `;
         const nameChanger = new NameChanger(inputCode);
@@ -52,7 +52,7 @@ describe('renameVariable(oldName, newName)', () => {
         const nameChanger = new NameChanger(inputCode);
         nameChanger.renameVariable('log', 'print');
         expect(nameChanger.toCode())
-            .toBe(outdent` 
+            .toBe(outdent`
                 function main() {
                     const _print = 'World';
                     print(_print);
@@ -134,7 +134,7 @@ describe('renameVariable(oldName, newName)', () => {
 
             log('Hello');
             main();
-            
+
             printer.print('asd');
         `;
         const nameChanger = new NameChanger(inputCode);
@@ -160,7 +160,7 @@ describe('renameVariable(oldName, newName)', () => {
 
             log('Hello');
             main();
-            
+
             logger.log('asd');
         `;
         const nameChanger = new NameChanger(inputCode);
@@ -186,7 +186,7 @@ describe('renameVariable(oldName, newName)', () => {
 
             log('log');
             main();
-            
+
             logger.log('print');
         `;
         const nameChanger = new NameChanger(inputCode);
@@ -302,7 +302,7 @@ describe('renameVariable(oldName, newName)', () => {
             function log(msg) {
                 console.log(msg);
             }
-        
+
             function main(print) {
                 log(print);
                 return () => {
@@ -310,12 +310,12 @@ describe('renameVariable(oldName, newName)', () => {
                     log(print);
                 };
             }
-            
+
             {
                 const print = 'World';
                 console.log(print);
             }
-            
+
             let a = {
                 print: () => {}
             };

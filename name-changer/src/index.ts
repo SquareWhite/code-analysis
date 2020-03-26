@@ -19,7 +19,7 @@ export default class NameChanger {
         const foundNewNames: IdentifierWithContext[] = [];
 
         walk.fullAncestor(this.astTree, (node: Node, _, ancestors: Node[]) => {
-            let identifiers = this.lookForIdentifiers(node);
+            const identifiers = this.lookForIdentifiers(node);
             if (!identifiers.length) {
                 return;
             }
@@ -63,7 +63,7 @@ export default class NameChanger {
 
         let appeared = false;
         walk.full(block, (node: Node) => {
-            let identifiers = this.lookForIdentifiers(node);
+            const identifiers = this.lookForIdentifiers(node);
             if (!identifiers.length) {
                 return;
             }
@@ -77,10 +77,10 @@ export default class NameChanger {
     }
 
     private lookForIdentifiers(node: Node) : Identifier[] {
-        let identifiers: Identifier[] = [];
+        const identifiers: Identifier[] = [];
 
         if (node.type === 'Identifier') {
-           identifiers.push(<Identifier>node);
+           identifiers.push(node as Identifier);
         }
         if (node.id) {
             identifiers.push(node.id);

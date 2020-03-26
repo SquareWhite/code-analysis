@@ -1,4 +1,5 @@
-import {BinaryTree, Node} from '../src';
+import {BinaryTree} from '../src';
+import {Node} from '../src/node';
 
 describe('BinaryTree', () => {
 
@@ -26,7 +27,7 @@ describe('BinaryTree', () => {
     });
 
     it('tree.insert() inserts nodes', () => {
-        const tree = new BinaryTree<Number>();
+        const tree = new BinaryTree<number>();
         tree.insert(1);
         tree.insert(2);
         tree.insert(3);
@@ -39,14 +40,14 @@ describe('BinaryTree', () => {
     });
 
     it('tree.insert() throws Error when called with null or undefined', () => {
-        const tree = new BinaryTree<Number>();
+        const tree = new BinaryTree<number>();
         expect(
             () => tree.insert(null)
         ).toThrowError('Can\'t insert null or undefined!');
     });
 
     it('tree.delete() deletes nodes', () => {
-        const tree = new BinaryTree<Number>();
+        const tree = new BinaryTree<number>();
         tree.insert(1);
         tree.delete(1);
 
@@ -70,14 +71,14 @@ describe('BinaryTree', () => {
     });
 
     it('tree.delete() throws Error when called with null or undefined', () => {
-        const tree = new BinaryTree<Number>();
+        const tree = new BinaryTree<number>();
         expect(
             () => tree.delete(null)
         ).toThrowError('Can\'t delete null or undefined!');
     });
 
     it('Possible to store 100 values, then delete them', () => {
-        const tree = new BinaryTree<Number>();
+        const tree = new BinaryTree<number>();
         for (let i = 0; i < 100; i++) {
             tree.insert(i);
         }
