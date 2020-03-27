@@ -1,4 +1,4 @@
-import NameChanger from '../src';
+import {NameChanger} from '../src';
 import outdent from 'outdent';
 
 describe('renameVariable(oldName, newName)', () => {

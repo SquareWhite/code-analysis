@@ -2,7 +2,7 @@
   "name": "name-changer",
   "version": "0.0.1",
   "description": "",
-  "main": "src/index.js",
+  "main": "dist/index.js",
   "scripts": {
     "test": "jest --coverage",
     "test:watch": "jest --coverage --watchAll",
@@ -18,11 +18,11 @@
     "acorn": "^7.1.1",
     "acorn-walk": "^7.1.1",
     "escodegen": "^1.14.1",
-    "outdent": "^0.7.1",
-    "tslint": "^6.1.0",
     "typescript": "^3.8.3"
   },
   "devDependencies": {
+    "outdent": "^0.7.1",
+    "tslint": "^6.1.0",
     "@types/acorn": "^4.0.5",
     "@types/escodegen": "0.0.6",
     "@types/jest": "^25.1.4",

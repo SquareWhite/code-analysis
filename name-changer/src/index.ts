@@ -3,23 +3,29 @@ import * as walk from 'acorn-walk';
 import * as escodegen from 'escodegen';
 
 
-export default class NameChanger {
-    private readonly astTree : acorn.Node;
+export class NameChanger {
+    private readonly tree : acorn.Node;
 
     constructor(inputCode: string) {
-        this.astTree = acorn.parse(inputCode);
+        this.tree = acorn.parse(inputCode);
     }
 
+    /**
+     * Returns code representation of ast
+     */
     toCode() : string {
-        return escodegen.generate(this.astTree);
+        return escodegen.generate(this.tree);
     }
 
+    /**
+     * Changes the name of a variable in the tree
+     */
     renameVariable(oldName: string, newName: string) : void {
         const foundOldNames: Identifier[] = [];
         const foundNewNames: IdentifierWithContext[] = [];
 
-        walk.fullAncestor(this.astTree, (node: Node, _, ancestors: Node[]) => {
-            const identifiers = this.lookForIdentifiers(node);
+        walk.fullAncestor(this.tree, (node: Node, _, ancestors: Node[]) => {
+            const identifiers = this._lookForIdentifiers(node);
             if (!identifiers.length) {
                 return;
             }
@@ -36,14 +42,14 @@ export default class NameChanger {
         });
 
         foundNewNames.forEach(({identifier, ancestors}) => {
-            if (this.closestScopeContainsName(oldName, ancestors)) {
+            if (this._closestScopeContainsName(oldName, ancestors)) {
                 identifier.name = '_' + newName;
             }
         });
         foundOldNames.forEach(identifier => identifier.name = newName);
     }
 
-    private closestScopeContainsName(name: string, ancestors: Node[]) : boolean {
+    private _closestScopeContainsName(name: string, ancestors: Node[]) : boolean {
         const LEXICAL_SCOPE_TYPES = [
             'BlockStatement',
             'FunctionDeclaration',
@@ -55,6 +61,8 @@ export default class NameChanger {
             .reverse()
             .find(node => LEXICAL_SCOPE_TYPES.includes(node.type));
         if (!block) {
+            // code example in the task description implies that
+            // "log" is available in the outer scope
             return true;
         }
         if (block.type !== 'BlockStatement') {
@@ -63,7 +71,7 @@ export default class NameChanger {
 
         let appeared = false;
         walk.full(block, (node: Node) => {
-            const identifiers = this.lookForIdentifiers(node);
+            const identifiers = this._lookForIdentifiers(node);
             if (!identifiers.length) {
                 return;
             }
@@ -76,7 +84,7 @@ export default class NameChanger {
         return appeared;
     }
 
-    private lookForIdentifiers(node: Node) : Identifier[] {
+    private _lookForIdentifiers(node: Node) : Identifier[] {
         const identifiers: Identifier[] = [];
 
         if (node.type === 'Identifier') {
